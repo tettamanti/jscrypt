@@ -133,35 +133,55 @@ function getRandomBytes(howMany) {
 // something that returns truly random bits.
 
 function rijndaelEncrypt(plaintext, key, mode) {
-  var i, aBlock;
-  var bpb = blockSizeInBits / 8;          // bytes per block
-  var ct;                                 // ciphertext
+	var i, aBlock;
+	var bpb = blockSizeInBits / 8;          // bytes per block
+	var ct;                                 // ciphertext
 
-  if (!plaintext || !key)
-    return;
-  if (key.length*8 != keySizeInBits)
-    return; 
-  if (mode == "CBC")
-    ct = getRandomBytes(bpb);             // get IV
-  else {
-    mode = "ECB";
-    ct = new Array();
-  }
+	if (!plaintext || !key)
+		return;
+	if (key.length*8 != keySizeInBits)
+		return;
+	if (mode != 'ECB' && mode != 'CBC' && mode != 'CFB')
+		return;
+	if (mode == "CBC")
+		ct = getRandomBytes(bpb);             // get IV
+	else {
+		ct = new Array();
+	}
 
-  // convert plaintext to byte array and pad with zeros if necessary. 
-  plaintext = formatPlaintext(plaintext);
+	// convert plaintext to byte array and pad with zeros if necessary. 
+	plaintext = formatPlaintext(plaintext);
 
-  var expandedKey = new keyExpansion(key);
-  
-  for (var block=0; block<plaintext.length / bpb; block++) {
-    aBlock = plaintext.slice(block*bpb, (block+1)*bpb);
-    if (mode == "CBC")
-      for (var i=0; i<bpb; i++) 
-        aBlock[i] ^= ct[block*bpb + i];
-    ct = ct.concat(AESencrypt(aBlock, expandedKey));
-  }
+	var expandedKey = new keyExpansion(key);
 
-  return ct;
+	for (var block=0; block<plaintext.length / bpb; block++) {
+		var pt = plaintext.slice(block*bpb, (block+1)*bpb);
+		if (mode == 'CBC' || mode == 'ECB')
+			aBlock = pt;
+
+		var tmp = null;
+		if (mode == "CBC")
+			for (var i=0; i<bpb; i++) 
+				aBlock[i] ^= ct[block*bpb + i];
+
+		if (mode == 'CFB') {
+			if (block == 0)
+				//aBlock = getRandomBytes(bpb);
+				aBlock = new Array(0, 1, 2, 3, 4, 5, 6, 7,
+						8, 9, 10, 11, 12, 13, 14, 15);
+			else
+				aBlock = ct.slice((block -1) * bpb, block * bpb);
+		}
+
+		ct = ct.concat(AESencrypt(aBlock, expandedKey));
+		if (mode == 'CFB') {
+			/* XOR in the data block */
+			for (var i = 0; i < bpb; i++)
+				ct[block * bpb + i] ^= pt[i];
+		}
+	}
+
+	return ct;
 }
 
 // rijndaelDecrypt(ciphertext, key, mode)
