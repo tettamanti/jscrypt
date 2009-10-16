@@ -132,7 +132,7 @@ function getRandomBytes(howMany) {
 // "for real" it is a good idea to change the function getRandomBytes() to 
 // something that returns truly random bits.
 
-function rijndaelEncrypt(plaintext, key, mode) {
+function rijndaelEncrypt(plaintext, key, mode, iv) {
 	var i, aBlock;
 	var bpb = blockSizeInBits / 8;          // bytes per block
 	var ct;                                 // ciphertext
@@ -143,11 +143,11 @@ function rijndaelEncrypt(plaintext, key, mode) {
 		return;
 	if (mode != 'ECB' && mode != 'CBC' && mode != 'CFB')
 		return;
-	if (mode == "CBC")
-		ct = getRandomBytes(bpb);             // get IV
-	else {
-		ct = new Array();
+	if (mode == 'CBC' || mode == 'CFB') {
+		if (iv == null)
+			iv = getRandomBytes(bpb);
 	}
+	ct = new Array();
 
 	// convert plaintext to byte array and pad with zeros if necessary. 
 	plaintext = formatPlaintext(plaintext);
@@ -160,17 +160,21 @@ function rijndaelEncrypt(plaintext, key, mode) {
 			aBlock = pt;
 
 		var tmp = null;
-		if (mode == "CBC")
-			for (var i=0; i<bpb; i++) 
-				aBlock[i] ^= ct[block*bpb + i];
-
-		if (mode == 'CFB') {
+		if (mode == 'CBC') {
+			var tmp;
 			if (block == 0)
-				//aBlock = getRandomBytes(bpb);
-				aBlock = new Array(0, 1, 2, 3, 4, 5, 6, 7,
-						8, 9, 10, 11, 12, 13, 14, 15);
+				tmp = iv;
 			else
-				aBlock = ct.slice((block -1) * bpb, block * bpb);
+				/* Previous CT block */
+				tmp = ct.slice(block * bpb, (block + 1) * bpb);
+			
+			for (var i = 0; i < bpb; i++) 
+				aBlock[i] ^= tmp[i];
+		} else if (mode == 'CFB') {
+			if (block == 0)
+				aBlock = iv;
+			else
+				aBlock = ct.slice((block - 1) * bpb, block * bpb);
 		}
 
 		ct = ct.concat(AESencrypt(aBlock, expandedKey));
