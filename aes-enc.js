@@ -444,9 +444,7 @@ function keyExpansion(key)
       }
     }
   }
-  this.rounds = rounds;
-  this.rk = keySched;
-  return this;
+  return {rounds: rounds, rk: keySched};
 }
 
 function AESencrypt(block, ctx)
