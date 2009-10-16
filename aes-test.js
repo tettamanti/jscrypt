@@ -132,20 +132,20 @@ function getRandomBytes(howMany) {
 // "for real" it is a good idea to change the function getRandomBytes() to 
 // something that returns truly random bits.
 
-function rijndaelEncrypt(plaintext, key, mode, iv) {
+function rijndaelEncrypt(ctx, plaintext, key, mode) {
 	var i, aBlock;
-	var bpb = blockSizeInBits / 8;          // bytes per block
+	var bpb = ctx.blockSizeInBits / 8;      // bytes per block
 	var ct;                                 // ciphertext
 
 	if (!plaintext || !key)
 		return;
-	if (key.length*8 != keySizeInBits)
+	if (key.length*8 != ctx.keySizeInBits)
 		return;
 	if (mode != 'ECB' && mode != 'CBC' && mode != 'CFB')
 		return;
 	if (mode == 'CBC' || mode == 'CFB') {
-		if (iv == null)
-			iv = getRandomBytes(bpb);
+		if (ctx.iv == null)
+			ctx.iv = getRandomBytes(bpb);
 	}
 	ct = new Array();
 
@@ -163,7 +163,7 @@ function rijndaelEncrypt(plaintext, key, mode, iv) {
 		if (mode == 'CBC') {
 			var tmp;
 			if (block == 0)
-				tmp = iv;
+				tmp = ctx.iv;
 			else
 				/* Previous CT block */
 				tmp = ct.slice(block * bpb, (block + 1) * bpb);
@@ -172,7 +172,7 @@ function rijndaelEncrypt(plaintext, key, mode, iv) {
 				aBlock[i] ^= tmp[i];
 		} else if (mode == 'CFB') {
 			if (block == 0)
-				aBlock = iv;
+				aBlock = ctx.iv;
 			else
 				aBlock = ct.slice((block - 1) * bpb, block * bpb);
 		}
