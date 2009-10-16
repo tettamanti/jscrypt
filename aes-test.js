@@ -100,7 +100,7 @@ function hex2s(hex)
 // instanceof operator, but this operator is not available until IE5.0 so I 
 // chose to use the heuristic below. 
 
-function formatPlaintext(plaintext) {
+function formatPlaintext(plaintext, blockSizeInBits) {
   var bpb = blockSizeInBits / 8;               // bytes per block
   var i;
 
@@ -170,7 +170,7 @@ function rijndaelEncrypt(plaintext, key, params) {
 	ct = new Array();
 
 	// convert plaintext to byte array and pad with zeros if necessary. 
-	plaintext = formatPlaintext(plaintext);
+	plaintext = formatPlaintext(plaintext, params.blockSizeInBits);
 
 	var expandedKey = new keyExpansion(key);
 
