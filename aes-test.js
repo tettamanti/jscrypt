@@ -69,6 +69,18 @@ function byteArrayToHex(byteArray) {
   return result;
 }
 
+function hexToByteArray(hex) {
+	var ret = Array();
+	
+	if (hex.length % 2 != 0)
+		return null;
+	
+	for (var i = 0; i < hex.length; i += 2)
+		ret[i] = parseInt(hex.slice(i, i + 2), 16);
+	
+	return ret;
+}
+
 function hex2s(hex)
 {
   var r='';
@@ -118,20 +130,27 @@ function getRandomBytes(howMany) {
   return bytes;
 }
 
-// rijndaelEncrypt(plaintext, key, mode)
-// Encrypts the plaintext using the given key and in the given mode. 
-// The parameter "plaintext" can either be a string or an array of bytes. 
-// The parameter "key" must be an array of key bytes. If you have a hex 
-// string representing the key, invoke hexToByteArray() on it to convert it 
-// to an array of bytes. The third parameter "mode" is a string indicating
-// the encryption mode to use, either "ECB" or "CBC". If the parameter is
-// omitted, ECB is assumed.
-// 
-// An array of bytes representing the cihpertext is returned. To convert 
-// this array to hex, invoke byteArrayToHex() on it. If you are using this 
-// "for real" it is a good idea to change the function getRandomBytes() to 
-// something that returns truly random bits.
-
+/** Encrypts the plaintext using the given key and in the given mode. 
+ * The parameter "plaintext" can either be a string or an array of bytes. 
+ * The parameter "key" must be an array of key bytes. If you have a hex 
+ * string representing the key, invoke hexToByteArray() on it to convert it 
+ * to an array of bytes.
+ * 
+ * An array of bytes representing the cihpertext is returned. To convert 
+ * this array to hex, invoke byteArrayToHex() on it. If you are using this 
+ * "for real" it is a good idea to change the function getRandomBytes() to 
+ * something that returns truly random bits.
+ * 
+ * @param plaintext The input plaintext, it can be either be a string or an
+ * array of bytes
+ * @param key An array of byte; it must match the key size declared in params
+ * @param params An object with parameter for the algorithm:
+ * - mode: the encryption mode to use, can be "ECB" or "CBC" or "CFB"
+ * - blockSizeInBits: the block size used by the algorithm (in bits)
+ * - keySizeInBits: the key size in bits (valid values are 128, 192, 256)
+ * - iv: optional byte array with the IV; unused in "ECB" mode
+ * @return An array of bytes representing the cihpertext.
+ */
 function rijndaelEncrypt(plaintext, key, params) {
 	if (!plaintext || !key || !params)
 		return;
