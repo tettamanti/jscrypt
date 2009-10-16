@@ -133,12 +133,13 @@ function getRandomBytes(howMany) {
 // something that returns truly random bits.
 
 function rijndaelEncrypt(plaintext, key, params) {
-	var i, aBlock;
-	var bpb = params.blockSizeInBits / 8;      // bytes per block
-	var ct;                                 // ciphertext
-
 	if (!plaintext || !key || !params)
 		return;
+
+	var i, aBlock;
+	var bpb = params.blockSizeInBits / 8;   // bytes per block
+	var ct;                                 // ciphertext
+
 	if (key.length*8 != params.keySizeInBits)
 		return;
 	if (params.mode != 'ECB' && params.mode != 'CBC' && params.mode != 'CFB')
