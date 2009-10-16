@@ -132,20 +132,20 @@ function getRandomBytes(howMany) {
 // "for real" it is a good idea to change the function getRandomBytes() to 
 // something that returns truly random bits.
 
-function rijndaelEncrypt(ctx, plaintext, key, mode) {
+function rijndaelEncrypt(plaintext, key, params) {
 	var i, aBlock;
-	var bpb = ctx.blockSizeInBits / 8;      // bytes per block
+	var bpb = params.blockSizeInBits / 8;      // bytes per block
 	var ct;                                 // ciphertext
 
-	if (!plaintext || !key)
+	if (!plaintext || !key || !params)
 		return;
-	if (key.length*8 != ctx.keySizeInBits)
+	if (key.length*8 != params.keySizeInBits)
 		return;
-	if (mode != 'ECB' && mode != 'CBC' && mode != 'CFB')
+	if (params.mode != 'ECB' && params.mode != 'CBC' && params.mode != 'CFB')
 		return;
-	if (mode == 'CBC' || mode == 'CFB') {
-		if (ctx.iv == null)
-			ctx.iv = getRandomBytes(bpb);
+	if (params.mode == 'CBC' || params.mode == 'CFB') {
+		if (params.iv == null)
+			params.iv = getRandomBytes(bpb);
 	}
 	ct = new Array();
 
@@ -156,29 +156,29 @@ function rijndaelEncrypt(ctx, plaintext, key, mode) {
 
 	for (var block=0; block<plaintext.length / bpb; block++) {
 		var pt = plaintext.slice(block*bpb, (block+1)*bpb);
-		if (mode == 'CBC' || mode == 'ECB')
+		if (params.mode == 'CBC' || params.mode == 'ECB')
 			aBlock = pt;
 
 		var tmp = null;
-		if (mode == 'CBC') {
+		if (params.mode == 'CBC') {
 			var tmp;
 			if (block == 0)
-				tmp = ctx.iv;
+				tmp = params.iv;
 			else
 				/* Previous CT block */
 				tmp = ct.slice(block * bpb, (block + 1) * bpb);
 			
 			for (var i = 0; i < bpb; i++) 
 				aBlock[i] ^= tmp[i];
-		} else if (mode == 'CFB') {
+		} else if (params.mode == 'CFB') {
 			if (block == 0)
-				aBlock = ctx.iv;
+				aBlock = params.iv;
 			else
 				aBlock = ct.slice((block - 1) * bpb, block * bpb);
 		}
 
 		ct = ct.concat(AESencrypt(aBlock, expandedKey));
-		if (mode == 'CFB') {
+		if (params.mode == 'CFB') {
 			/* XOR in the data block */
 			for (var i = 0; i < bpb; i++)
 				ct[block * bpb + i] ^= pt[i];
