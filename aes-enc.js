@@ -314,13 +314,20 @@ function F1(x0, x1, x2, x3)
       | (B1(T1[(x2>>16)&255])<<16) | (B1(T1[x3>>>24])<<24);
 }
 
+/** Pack a byte array into an array of int.
+ * Each int is constructed from 4 bytes.
+ * 
+ * 
+ * @param octets An array on bytes; the length must be a multiple of 4.
+ * @return An array on int constructed from the byte array.
+ */
 function packBytes(octets)
 {
   var i, j;
   var len=octets.length;
   var b=new Array(len/4);
 
-  if (!octets || len % 4) return;
+  if (!octets || len % 4) return null;
 
   for (i=0, j=0; j<len; j+= 4)
      b[i++] = octets[j] | (octets[j+1]<<8) | (octets[j+2]<<16) | (octets[j+3]<<24);
