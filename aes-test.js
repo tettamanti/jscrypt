@@ -73,10 +73,10 @@ function hexToByteArray(hex) {
 	var ret = Array();
 	
 	if (hex.length % 2 != 0)
-		return null;
+		throw Error('Invalid length');
 	
 	for (var i = 0; i < hex.length; i += 2)
-		ret[i] = parseInt(hex.slice(i, i + 2), 16);
+		ret.push(parseInt(hex.slice(i, i + 2), 16));
 	
 	return ret;
 }
@@ -159,8 +159,8 @@ function rijndaelEncrypt(plaintext, key, params) {
 	var bpb = params.blockSizeInBits / 8;   // bytes per block
 	var ct;                                 // ciphertext
 
-	if (key.length*8 != params.keySizeInBits)
-		return;
+	if (key.length * 8 != params.keySizeInBits)
+		throw new Error('Illegal key length ' + key.length * 8);
 	if (params.mode != 'ECB' && params.mode != 'CBC' && params.mode != 'CFB')
 		return;
 	if (params.mode == 'CBC' || params.mode == 'CFB') {
