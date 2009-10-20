@@ -186,7 +186,7 @@ function rijndaelEncrypt(plaintext, key, params) {
 				tmp = params.iv;
 			else
 				/* Previous CT block */
-				tmp = ct.slice(block * bpb, (block + 1) * bpb);
+				tmp = ct.slice((block - 1) * bpb, block * bpb);
 			
 			for (var i = 0; i < bpb; i++) 
 				aBlock[i] ^= tmp[i];
